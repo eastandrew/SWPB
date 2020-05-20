@@ -3,13 +3,13 @@ Fit probit model to entered data and then choose new doses in between 10th and 9
 
 The model refreshes realtime/automatically every time new data is type into the side panel.
 
-# Enter Data
+## Enter Data
 Type in doses, then number of animals responding/moribund, and then number of animals in each treatment.
 
 Lastly, enter the number of doses you would like in your n-th stage including the "current" LC10 and LC90 as probit based brackets.  
 
 
-# Tabs  
+## Tabs  
 
 * Data Table shows the data YOU entered for QAQC purposes.
 * Plot shows the fitted probit model and the mean response for each treatment.
@@ -18,7 +18,7 @@ Lastly, enter the number of doses you would like in your n-th stage including th
 * New Dose Chooser shows the doses bracketed by the LC10 and LC90 and the estimated response given the current model.  
 
 
-## Shiny App ##
+# Shiny App 
 To run shiny app:
 
 `library(shiny)`
