@@ -23,4 +23,4 @@ To run shiny app:
 
 `library(shiny)`
 
-`runGitHub("doseresponseplanner", "eastandrew")`
+`runGitHub("SWPB", "eastandrew")`
