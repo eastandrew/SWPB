@@ -21,6 +21,8 @@ Lastly, enter the number of doses you would like in your n-th stage including th
 # Shiny App 
 To run shiny app:
 
-`library(shiny)`
+`library(shiny)`  
+
+`library(drc)`
 
 `runGitHub("SWPB", "eastandrew")`
