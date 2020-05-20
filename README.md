@@ -21,8 +21,8 @@ Lastly, enter the number of doses you would like in your n-th stage including th
 # Shiny App 
 To run shiny app:
 
-`library(shiny)`  
+`library(shiny)  #this comes automatically with newer versions of Rstudio`  
 
-`library(drc)`
+`library(drc)  # install.packages("drc") if you don't have it`
 
 `runGitHub("SWPB", "eastandrew")`
