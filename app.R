@@ -16,7 +16,7 @@ library(shiny)
 ui <- fluidPage(
     
     # App title ----
-    titlePanel("Dose Response Model and Dose Selection"),
+    titlePanel("SWPB, StageWise ProBit Dose Response Model and Dose Selection"),
     
     # Sidebar layout with input and output definitions ----
     sidebarLayout(
@@ -25,13 +25,15 @@ ui <- fluidPage(
         sidebarPanel(
             h2("Enter Data, Hit Run"),
             p("Make sure number of doses, responses, and total animals are equal."),
-            p("Model is fit to entered data and then model is used to pick treatments at important response levels."),
+            p("Model is fit to entered data and stop point checked."),
+            p("If stop point not met, model is used to pick treatments at important response levels."),
             p("After each testing stage, add entire dataset and re-run."),
             
-            textInput("dose", label = h3("Dose Input"), value = "0,1,2.718,7.388,20.083"),
-            textInput("response", label=h3("Response Input"), value="0,1,5,9,10"),
-            textInput("total", label=h3("Total Animals Input"), value="10,10,10,10,10"),
+            textInput("dose", label = h3("Dose Input"), value = "0,1,2.718,7.388,20.083,0,1,2.718,7.388,20.083"),
+            textInput("response", label=h3("Response Input"), value="0,1,5,9,10, 0,1,4,8,9"),
+            textInput("total", label=h3("Total Animals Input"), value="10,10,10,10,10,10,10,10,10,10"),
             textInput("numtreats", label=h3("Number of Treats to Plan"), value="5"),
+            p("Check number of treatments and animals!"),
             actionButton("run",label=h3("Run")),
             br(),
             br(),
@@ -50,6 +52,7 @@ ui <- fluidPage(
                         tabPanel("Plot", plotOutput("plot")),
                         tabPanel("Summary", verbatimTextOutput("summary")),
                         tabPanel("LC Values", tableOutput("lc50")),
+                        tabPanel("Stop Point Test", tableOutput("stoptest")),
                         tabPanel("New Dose Chooser", tableOutput("predictions"))
             )
             
@@ -82,6 +85,20 @@ server <- function(input, output) {
         df
     })
     
+    f <- eventReactive(input$run, {
+        
+        up <- ED(d(), 0.5, type="absolute", interval="delta", display=F)[,4]
+        down <- ED(d(), 0.5, type="absolute", interval="delta", display=F)[,3]
+        ld50 <- ED(d(), 0.5, type="absolute", interval="delta", display=F)[,1]
+
+
+        df <- data.frame(Intra_CI_Range=up-down, Twice_LD50=ld50*2)
+        df$Stop_Ratio_Value <- df$Intra_CI_Range/df$Twice_LD50
+        df$'<=0.4?' <- ifelse(df$Stop_Ratio_Value<=0.4, "Yes, Stop","No, Repeat")
+        df
+        
+    })
+    
     library(drc)
     # Generate a plot of the data ----
     # Also uses the inputs to build the plot label. Note that the
@@ -100,8 +117,8 @@ server <- function(input, output) {
     
     
     output$plot <- renderPlot({
-        plot(d())#with(d(), plot)
-    })
+        plot(d(), type="all", pch=16, lwd=2, bty="l", xlab="Dose", ylab="Response/Total", cex=2)#with(d(), plot)
+    }, height=500, width=600, units="px")
     
     # Generate a summary of the data ----
     output$summary <- renderPrint({
@@ -116,7 +133,11 @@ server <- function(input, output) {
         EDlist <- c(ED(d(),resplist, type="absolute", display=F)[,1])
         EDlistlower <- c(ED(d(),resplist, type="absolute", interval="delta", display=F)[,3])
         EDlistupper <- c(ED(d(),resplist, type="absolute", interval="delta", display=F)[,4])
-        dfpred <- data.frame(LC_value=resplist, Estimated_Dose=EDlist, ED_lower=EDlistlower, ED_upper=EDlistupper)
+        dfpred <- data.frame(LD_value=resplist, Estimated_Dose=EDlist, ED_lower=EDlistlower, ED_upper=EDlistupper)
+    })
+    
+    output$stoptest <- renderTable({
+        f()
     })
     
     output$predictions <- renderTable({
@@ -131,7 +152,7 @@ server <- function(input, output) {
         }
         
         
-        dfpred <- data.frame(New_Doses=vect, Estimated_Mortality=predict(d(),newdata=data.frame(vect)))
+        dfpred <- data.frame(New_Planning_Doses=vect, Estimated_Mortality=predict(d(),newdata=data.frame(vect)))
     })
     
 }
