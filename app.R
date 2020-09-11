@@ -11,6 +11,7 @@
 
 library(shiny)
 
+
 # Define UI for random distribution app ----
 ui <- fluidPage(
     
@@ -22,12 +23,21 @@ ui <- fluidPage(
         
         # Sidebar panel for inputs ----
         sidebarPanel(
+            h2("Enter Data, Hit Run"),
+            p("Make sure number of doses, responses, and total animals are equal."),
+            p("Model is fit to entered data and then model is used to pick treatments at important response levels."),
+            p("After each testing stage, add entire dataset and re-run."),
             
-           
             textInput("dose", label = h3("Dose Input"), value = "0,1,2.718,7.388,20.083"),
             textInput("response", label=h3("Response Input"), value="0,1,5,9,10"),
             textInput("total", label=h3("Total Animals Input"), value="10,10,10,10,10"),
-            textInput("numtreats", label=h3("Number of Treats to Plan"), value="5")
+            textInput("numtreats", label=h3("Number of Treats to Plan"), value="5"),
+            actionButton("run",label=h3("Run")),
+            br(),
+            br(),
+            br(),
+            p("Written by A. East"),
+            p(a("GitHub",href="https://github.com/eastandrew/SWPB"))
             
         ),
         
@@ -50,18 +60,29 @@ ui <- fluidPage(
 # Define server logic for random distribution app ----
 server <- function(input, output) {
     
+    
     # Reactive expression to generate the requested distribution ----
     # This is called whenever the inputs change. The output functions
     # defined below then use the value computed from this expression
-    d <- reactive({
-        library(drc)
+    d <- eventReactive(input$run, {
+        
         dose <- as.numeric(unlist(strsplit(input$dose,",")))
         response <- as.numeric(unlist(strsplit(input$response,",")))
         total <- as.numeric(unlist(strsplit(input$total,",")))
         df <- data.frame(dose=dose, response=response, total=total)
         drm(response/total~dose, data=df,fct=LN.2(names=c("Slope","LC50")), type="binomial", weights=total)
+
     })
     
+    e <- eventReactive(input$run, {
+        dose <- as.numeric(unlist(strsplit(input$dose,",")))
+        response <- as.numeric(unlist(strsplit(input$response,",")))
+        total <- as.numeric(unlist(strsplit(input$total,",")))
+        df <- data.frame(dose=dose, response=response, total=total)
+        df
+    })
+    
+    library(drc)
     # Generate a plot of the data ----
     # Also uses the inputs to build the plot label. Note that the
     # dependencies on the inputs and the data reactive expression are
@@ -70,20 +91,21 @@ server <- function(input, output) {
     
     # Generate an HTML table view of the data ----
     output$table <- renderTable({
-        dose <- as.numeric(unlist(strsplit(input$dose,",")))
-        response <- as.numeric(unlist(strsplit(input$response,",")))
-        total <- as.numeric(unlist(strsplit(input$total,",")))
-        df <- data.frame(dose=dose, response=response, total=total)
+        #dose <- as.numeric(unlist(strsplit(input$dose,",")))
+        #response <- as.numeric(unlist(strsplit(input$response,",")))
+        #total <- as.numeric(unlist(strsplit(input$total,",")))
+        #df <- data.frame(dose=dose, response=response, total=total)
+        e()
     })
     
     
     output$plot <- renderPlot({
-        plot(d())
+        plot(d())#with(d(), plot)
     })
     
     # Generate a summary of the data ----
     output$summary <- renderPrint({
-        summary(d())
+       summary(d())
     })
     
     # Generate an HTML table view of the data ----
@@ -98,7 +120,7 @@ server <- function(input, output) {
     })
     
     output$predictions <- renderTable({
-       
+        
         EDlist <- c(ED(d(),c(0.1,0.9), type="absolute", display=F)[,1])
         vect <- c()
         numbertreat <- as.numeric(unlist(strsplit(input$numtreats,",")))
@@ -116,4 +138,5 @@ server <- function(input, output) {
 
 # Create Shiny app ----
 shinyApp(ui, server)
+
 
