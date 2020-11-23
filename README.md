@@ -3,6 +3,8 @@ Fit probit model to entered data and then choose new doses in between 10th and 9
 
 The model refreshes realtime/automatically every time new data is type into the side panel.
 
+eastandrew.shinyapps.io/swpb/
+
 ## Enter Data
 Type in doses, then number of animals responding/moribund, and then number of animals in each treatment.
 
