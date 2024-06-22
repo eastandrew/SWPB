@@ -51,7 +51,7 @@ ui <- fluidPage(
                         tabPanel("Data Table", tableOutput("table")),
                         tabPanel("Plot", plotOutput("plot")),
                         tabPanel("Summary", verbatimTextOutput("summary")),
-                        tabPanel("LC Values", tableOutput("lc50")),
+                        tabPanel("LD Values", tableOutput("lc50")),
                         tabPanel("Stop Point Test", tableOutput("stoptest")),
                         tabPanel("New Dose Chooser", tableOutput("predictions"))
             )
